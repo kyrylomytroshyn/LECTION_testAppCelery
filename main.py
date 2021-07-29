@@ -11,16 +11,25 @@ app = Celery('tasks')
 # )
 
 app.config_from_object('celeryconfig')
+
+
 @app.task
 def class_task(cls):
     print(cls)
 
+
 @app.task
 def add(x, y):
     return x + y
+
 
 @app.task
 def long_add(x, y):
     import time
     time.sleep(10)
     return x + y
+
+
+@app.on_after_configure.connect
+def setup(sender, **kwargs):
+    sender.add_periodic_task(5, add.s(2, 2), name='add every 5 sec')
